@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<robot name="differential_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- ============================================ -->
+  <!-- ARQUIVO PRINCIPAL                            -->
+  <!-- Importa propriedades e macros, define o robô -->
+  <!-- ============================================ -->
+
+  <!-- ==================== -->
+  <!-- IMPORTAÇÃO DE ARQUIVOS -->
+  <!-- ==================== -->
+  <!--
+    xacro:include importa o conteúdo de outros arquivos .xacro
+    $(find package_name) retorna o caminho do pacote ROS
+  -->
+  <xacro:include filename="$(find rm_description)/urdf/properties.xacro"/>
+  <xacro:include filename="$(find rm_description)/urdf/macros.xacro"/> 
+
+  <!-- ==================== -->
+  <!-- BASE FOOTPRINT       -->
+  <!-- ==================== -->
+  <link name="base_footprint">
+  </link>
+
+  <link name="caixa">
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <geometry> <box size=".5 1 0.1"/> </geometry>
+    <material name="gray"/>
+  </visual>
+  <collision>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <geometry> <box size=".5 1 0.1"/> </geometry>
+  </collision>
+  <inertial>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <mass value="1.0"/>
+    <inertia ixx="0.084166667" ixy="0" ixz="0" iyy="0.021666667" iyz="0" izz="0.1041666667"/>
+  </inertial>
+</link>
+
+<joint name="base_caixa" type="fixed">
+    <parent link="base_footprint"/>
+    <child link="caixa"/>
+    <origin xyz="0 0 0.025" rpy="0 0 0"/>
+  </joint>
+
+  <xacro:cylinder_link
+    name="rodaL"
+    length="${.1}"
+    radius="${.15}"
+    mass="${1.0}"
+    material="gray"/>
+
+  <joint name="caixa_rodaL" type="continuous">
+    <parent link="caixa"/>
+    <child link="rodaL"/>
+    <origin xyz="0 ${(1/2)+.05} 0" rpy="300 0 0"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+
+  <xacro:cylinder_link
+    name="rodaR"
+    length="${.1}"
+    radius="${.15}"
+    mass="${1.0}"
+    material="gray"/>
+
+  <joint name="caixa_rodaR" type="continuous">
+    <parent link="caixa"/>
+    <child link="rodaR"/>
+    <origin xyz="0 -${(1/2)+.05} 0" rpy="300 0 0"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+
+  <xacro:sphere_link
+    name="head"
+    radius="${.15}"
+    mass="${1.0}"
+    material="gray"/>
+
+  <joint name="caixa_head" type="fixed">
+    <parent link="caixa"/>
+    <child link="head"/>
+    <origin xyz=".25 0 0" rpy="0 0 0"/>
+  </joint>
+
+</robot>
