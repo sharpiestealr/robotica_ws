@@ -27,7 +27,11 @@
   <!-- MATERIAIS (cores)                            -->
   <!-- ============================================ -->
   <material name="gray">
-    <color rgba="0.5 0.5 0.5 1"/>
+    <color rgba="0.412 0.412 0.412 1"/>
+  </material>
+
+  <material name="pink">
+    <color rgba="1 0.412 0.706 1"/>
   </material>
 
 </robot>

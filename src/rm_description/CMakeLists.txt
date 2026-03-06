@@ -30,6 +30,7 @@ install(
     urdf
     launch
     rviz
+    world
   DESTINATION
     share/${PROJECT_NAME}/
 )

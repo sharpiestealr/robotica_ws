@@ -14,7 +14,8 @@
     $(find package_name) retorna o caminho do pacote ROS
   -->
   <xacro:include filename="$(find rm_description)/urdf/properties.xacro"/>
-  <xacro:include filename="$(find rm_description)/urdf/macros.xacro"/> 
+  <xacro:include filename="$(find rm_description)/urdf/macros.xacro"/>
+  <xacro:include filename="$(find rm_description)/urdf/gazebo_control.xacro" /> 
 
   <!-- ==================== -->
   <!-- BASE FOOTPRINT       -->
@@ -25,12 +26,12 @@
   <link name="caixa">
   <visual>
     <origin xyz="0 0 0" rpy="0 0 0"/>
-    <geometry> <box size=".5 1 0.1"/> </geometry>
-    <material name="gray"/>
+    <geometry> <box size=".5 .5 0.1"/> </geometry>
+    <material name="pink"/>
   </visual>
   <collision>
     <origin xyz="0 0 0" rpy="0 0 0"/>
-    <geometry> <box size=".5 1 0.1"/> </geometry>
+    <geometry> <box size=".5 .5 0.1"/> </geometry>
   </collision>
   <inertial>
     <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -42,7 +43,7 @@
 <joint name="base_caixa" type="fixed">
     <parent link="base_footprint"/>
     <child link="caixa"/>
-    <origin xyz="0 0 0.025" rpy="0 0 0"/>
+    <origin xyz="0 0 ${0.025+.15}" rpy="0 0 0"/>
   </joint>
 
   <xacro:cylinder_link
@@ -55,8 +56,8 @@
   <joint name="caixa_rodaL" type="continuous">
     <parent link="caixa"/>
     <child link="rodaL"/>
-    <origin xyz="0 ${(1/2)+.05} 0" rpy="300 0 0"/>
-    <axis xyz="0 0 1"/>
+    <origin xyz="0 ${(1/4)+.01+.1} 0" rpy="${pi/2} 0 0"/>
+    <axis xyz="0 0 -1"/>
   </joint>
 
   <xacro:cylinder_link
@@ -69,15 +70,15 @@
   <joint name="caixa_rodaR" type="continuous">
     <parent link="caixa"/>
     <child link="rodaR"/>
-    <origin xyz="0 -${(1/2)+.05} 0" rpy="300 0 0"/>
-    <axis xyz="0 0 1"/>
+    <origin xyz="0 -${(1/4)+.01} 0" rpy="${pi/2} 0 0"/>
+    <axis xyz="0 0 -1"/>
   </joint>
 
   <xacro:sphere_link
     name="head"
     radius="${.15}"
     mass="${1.0}"
-    material="gray"/>
+    material="pink"/>
 
   <joint name="caixa_head" type="fixed">
     <parent link="caixa"/>

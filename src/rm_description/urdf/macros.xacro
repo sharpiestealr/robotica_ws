@@ -51,7 +51,6 @@
       <inertial>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <mass value="${mass}"/>
-        <!-- Fórmula de inércia para esfera sólida -->
         <inertia
           ixx="${(2/5) * mass * radius * radius}"
           ixy="0.0" ixz="0.0"
@@ -61,7 +60,5 @@
       </inertial>
     </link>
   </xacro:macro>
-
-  
 
 </robot>
