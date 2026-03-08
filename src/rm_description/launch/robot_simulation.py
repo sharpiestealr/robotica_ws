@@ -21,7 +21,6 @@ def generate_launch_description():
     doc = xacro.parse(open(xacro_file))
     xacro.process_doc(doc)
     robot_description = doc.toxml()
-
     # Caminho para o arquivo de configuração da ponte
     bridge_config = os.path.join(pkg_share, 'config', 'gz_bridge.yaml')
 
@@ -62,14 +61,14 @@ def generate_launch_description():
         arguments=[
             '-name', 'meu_robo',
             '-topic', 'robot_description',
-            '-x', '5.25',
-            '-y', '4.5',
+            '-x', '2.25',
+            '-y', '2.5',
             '-z', '0.1',
         ],
         output='screen',
     )
-    
-    # 4. Ponte Gazebo ↔ ROS 2
+
+    #  Ponte Gazebo ↔ ROS 2
     ros_gz_bridge = Node(
         package='ros_gz_bridge',
         executable='parameter_bridge',
@@ -81,11 +80,20 @@ def generate_launch_description():
         output='screen',
     )
 
-    # 5. Ponte de imagem (otimizada para tópicos de imagem)
+    # Ponte de imagem (otimizada para tópicos de imagem)
     ros_gz_image_bridge = Node(
         package='ros_gz_image',
         executable='image_bridge',
         arguments=['/camera/image_raw'],
+    )
+
+
+    # Nó RViz2
+    rviz_node = Node(
+        package='rviz2',
+        executable='rviz2',
+        name='rviz2',
+        output='screen'
     )
 
     return LaunchDescription([
@@ -94,4 +102,5 @@ def generate_launch_description():
         spawn_robot,
         ros_gz_bridge,
         ros_gz_image_bridge,
+        rviz_node
     ])

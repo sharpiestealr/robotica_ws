@@ -76,14 +76,43 @@
 
   <xacro:sphere_link
     name="head"
-    radius="${.15}"
+    radius="${.075}"
     mass="${1.0}"
     material="pink"/>
 
   <joint name="caixa_head" type="fixed">
     <parent link="caixa"/>
     <child link="head"/>
-    <origin xyz=".25 0 0" rpy="0 0 0"/>
+    <origin xyz=".25 0 -0.075" rpy="0 0 0"/>
   </joint>
+
+  <xacro:cylinder_link
+    name="camera"
+    length="${.1}"
+    radius="${.05}"
+    mass="${1.0}"
+    material="pink"/>
+
+  <joint name="caixa_camera" type="fixed">
+    <parent link="caixa"/>
+    <child link="camera"/>
+    <origin xyz="0.05 0 .01" rpy="0 0 0"/>
+  </joint>
+
+  <xacro:cylinder_link
+    name="lidar"
+    length="${.15+.01}"
+    radius="${.05}"
+    mass="${1.0}"
+    material="pink"/>
+
+  <joint name="caixa_lidar" type="fixed">
+    <parent link="caixa"/>
+    <child link="lidar"/>
+    <origin xyz="0 0 .01" rpy="0 0 0"/>
+  </joint>
+
+  <link name="imu">
+  </link>
 
 </robot>
