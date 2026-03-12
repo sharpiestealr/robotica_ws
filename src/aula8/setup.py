@@ -27,8 +27,8 @@ setup(
     },
     entry_points={
     'console_scripts': [
-        'publisher = aula8.publisher:main',
-        'subscriber = aula8.subscriber:main',
+        'publisher = aula8.navigator:main',
+        'subscriber = aula8.navigator:main',
     ],
 },
 )

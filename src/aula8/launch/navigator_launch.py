@@ -24,13 +24,6 @@ def generate_launch_description():
 
     # Caminho para o arquivo de configuração da ponte
     bridge_config = os.path.join(pkg_share, 'config', 'gz_bridge.yaml')
-    
-    publisher_node = Node(
-        package='rm_description',
-        executable='publisher',
-        name='navigator',
-        output='screen',
-    )
 
     # 1. Lançar o Gazebo Sim com o mundo da casa
     #    Utiliza a launch file do pacote ros_gz_sim
@@ -93,6 +86,13 @@ def generate_launch_description():
         package='ros_gz_image',
         executable='image_bridge',
         arguments=['/camera/image_raw'],
+    )
+    
+    publisher_node = Node(
+        package='rm_description',
+        executable='publisher',
+        name='navigator',
+        output='screen',
     )
 
     return LaunchDescription([
