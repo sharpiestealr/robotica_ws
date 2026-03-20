@@ -1,0 +1,8 @@
+# goal
+float32 degrees
+---
+# result
+bool success
+---
+#feedback
+float32 degrees_remaining

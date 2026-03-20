@@ -1,0 +1,2 @@
+float32 orientacao
+float32 velocidade
