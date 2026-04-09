@@ -18,7 +18,7 @@ class Publisher(Node):
             case 2:
                 self.subscription_callback()
             case 3:
-                self.girar
+                self.girar()
             case _:
                 msg = Twist()
                 msg.linear.x = 0

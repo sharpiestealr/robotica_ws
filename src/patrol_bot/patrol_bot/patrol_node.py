@@ -72,6 +72,25 @@ class ActionClient(Node):
 
 def main(args=None):
     rclpy.init(args=args)
+    
+    estado = 'idle'
+    
+    match estado:
+        case 'idle':
+            node = ActionClient()
+            estado = 'anda frente'
+        case 'anda frente':
+             node.timer = node.create_timer(0.5, node.timer_callback)
+             estado = 'verifica obstaculo'  
+        case 'verifica obstaculo':
+            node.subscription = node.create_subscription(LaserScan, 'scan', node.subscription_callback, 10)
+            node.get_logger().info('Verificando obstáculos...')
+            estado = 'gira'
+        case 'gira':
+            node.action_client = ActionClient(node, RotateAngle, 'rotate')
+            node.send_goal(90)
+            estado = 'anda frente'     
+    
     srv_server = SrvServer()
     srv_server.send_goal(int(sys.argv[1]))
     rclpy.spin(srv_server)
