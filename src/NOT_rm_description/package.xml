@@ -3,7 +3,7 @@
   schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <!-- Nome do pacote (deve ser único no workspace) -->
-  <name>rm_description</name>
+  <name>NOT_rm_description</name>
   <version>1.0.0</version>
   <description>APS 1: Robótica Móvel Autônoma</description>
 
