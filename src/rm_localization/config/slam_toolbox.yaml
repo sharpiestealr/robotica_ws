@@ -30,8 +30,8 @@ slam_toolbox:
     max_laser_range: 12.0
 
     # Movimento minimo para adicionar um novo no ao grafo
-    minimum_travel_distance: 0.5
-    minimum_travel_heading:  0.5
+    minimum_travel_distance: 0.1
+    minimum_travel_heading:  0.1
 
     # Loop closure
     do_loop_closing: true

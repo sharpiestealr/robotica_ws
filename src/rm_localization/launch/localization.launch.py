@@ -19,7 +19,7 @@ import os
 def generate_launch_description():
     pkg_share = get_package_share_directory('rm_localization')
     amcl_yaml = os.path.join(pkg_share, 'config', 'amcl.yaml')
-    default_map = os.path.join(pkg_share, 'maps', 'my_map.yaml')
+    default_map = os.path.join(pkg_share, 'maps', 'house_map.yaml')
 
     map_arg = DeclareLaunchArgument(
         'map',

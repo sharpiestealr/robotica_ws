@@ -10,7 +10,7 @@ amcl:
     scan_topic:           scan
 
     # Numero de particulas
-    min_particles: 500
+    min_particles: 1000
     max_particles: 5000
 
     # Modelo do laser (likelihood_field e mais eficiente para 2D)
@@ -45,5 +45,5 @@ amcl:
     tf_broadcast: true
 
     # Recuperacao - robo sequestrado
-  recovery_alpha_slow: 0.001
-  recovery_alpha_fast: 0.1
+    recovery_alpha_slow: 0.001
+    recovery_alpha_fast: 0.1
