@@ -1,0 +1,6 @@
+rooms:
+  sala:      { x: 1.5, y: 0.0, yaw: 0.0  }
+  quarto1:   { x: 6.0, y: 0.0, yaw: 3.14 }
+  quarto2:   { x: 6.0, y: 5.0, yaw: 3.14 }
+  cozinha:   { x: 1.5, y: 5.0, yaw: 0.0  }
+  banheiro:  { x: 5.0, y: 2.5, yaw: 0.0  }
