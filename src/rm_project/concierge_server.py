@@ -11,14 +11,36 @@ import sys
 import time
 from rooms.yaml import rooms
 
-class ActionClient(Node):
+class ActionServer(Node):
     def __init__(self):
         super().__init__('projeto_srv_server')
         self.srv_server = self.create_service(SetBool, 'busy', self.srv_callback)
         self.subscription = self.create_subscription(LaserScan, 'scan', self.subscription_callback, 10)
         self.publisher = self.create_publisher(Twist, 'cmd_vel', 10)
-        self.action_client = ActionClient(self, RotateAngle, 'rotate')
-        self.go_to_room_client = ActionClient(self, GoToRoom, 'go_to_room')
+        self.action_server = ActionServer(self, Aula10, 'aula10_action', self.my_action_callback)
+
+    def my_action_callback(self, goal_handle):
+        self.get_logger().info('Executing goal...')
+
+        count_up_to = goal_handle.request.count_up_to
+        current_number = 0
+
+        while current_number < count_up_to:
+
+            feedback_msg = Aula10.Feedback()
+            feedback_msg.current_number = current_number
+            goal_handle.publish_feedback(feedback_msg)
+            self.get_logger().info(f'Publishing feedback: {current_number}')
+
+            current_number += 1
+
+            time.sleep(1)
+
+        goal_handle.succeed()
+        result = Aula10.Result()
+        result.final_count = current_number
+        self.get_logger().info('Goal succeeded!')
+        return result
 
     def srv_callback(self, request, response):
         response.success = False
@@ -84,10 +106,8 @@ class ActionClient(Node):
         self.get_logger().info(f'Missão: {result.success} - {result.message}')
         rclpy.shutdown()
 
-def main(args=None):
-    rclpy.init(args=args)
-    
-    estado = 'idle'
+def main(args=None):    
+    """ estado = 'idle'
     
     match estado:
         case 'idle':
@@ -111,10 +131,36 @@ def main(args=None):
             node.action_client = ActionClient(node, RotateAngle, 'rotate')
             node.send_goal()
             node.feedback_callback()
-            estado = 'anda frente'     
-    
-    srv_server = SrvServer()
-    srv_server.send_goal(int(sys.argv[1]))
-    rclpy.spin(srv_server)
-    node.destroy_node()
+            estado = 'anda frente'  """    
+            
+    rclpy.init(args=args)
+    action_server = ActionServerNode()
+    rclpy.spin(action_server)
     rclpy.shutdown()
+    
+    class ActionServerNode(Node):
+    def __init__(self):
+        super().__init__('aula10_action_server')
+
+    def my_action_callback(self, goal_handle):
+        self.get_logger().info('Executing goal...')
+
+        count_up_to = goal_handle.request.count_up_to
+        current_number = 0
+
+        while current_number < count_up_to:
+
+            feedback_msg = Aula10.Feedback()
+            feedback_msg.current_number = current_number
+            goal_handle.publish_feedback(feedback_msg)
+            self.get_logger().info(f'Publishing feedback: {current_number}')
+
+            current_number += 1
+
+            time.sleep(1)
+
+        goal_handle.succeed()
+        result = Aula10.Result()
+        result.final_count = current_number
+        self.get_logger().info('Goal succeeded!')
+        return result

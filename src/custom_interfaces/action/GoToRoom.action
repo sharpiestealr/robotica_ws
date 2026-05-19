@@ -1,11 +1,10 @@
-custom_interfaces/action/GoToRoom
-  # goal
-  string room_name
-  ---
-  # result
-  bool   success
-  string message              # razão do sucesso/falha
-  ---
-  # feedback
-  float32 distance_remaining  # metros até o waypoint atual
-  string  phase               # "going_to_room" (Parte 1)
+# goal
+string room_name
+---
+# result
+bool success
+string message              # razão do sucesso/falha
+---
+# feedback
+float32 distance_remaining  # metros até o waypoint atual
+string phase               # "going_to_room" (Parte 1)

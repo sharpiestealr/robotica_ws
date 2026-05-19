@@ -27,7 +27,6 @@ endif()
 
 rosidl_generate_interfaces(${PROJECT_NAME}
     "msg/RobotStatus.msg"
-    "srv/SetLimit.srv"
     "action/GoToRoom.action"
     "action/RotateAngle.action"
 )
