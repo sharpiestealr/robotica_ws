@@ -25,7 +25,7 @@ setup(
     entry_points={
         'console_scripts': [
         'action_server = aula10.action_server:main',
-        'action_client = aula10.action_client:main'
-        ],
-    },
+        'action_client = aula10.action_client:main',
+    ],
+},
 )

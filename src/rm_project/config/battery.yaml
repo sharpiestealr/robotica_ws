@@ -1,0 +1,6 @@
+Battery parameters:
+  initial_percent:      100.0
+  drain_moving_per_s:     1.0
+  drain_idle_per_s:       0.1
+  charge_per_s:           2.0
+  charge_radius_m:        0.5

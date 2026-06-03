@@ -22,5 +22,9 @@ setup(
     maintainer_email='lucas@example.com',
     description='Nav2 navigation stack for the differential robot in Gazebo',
     license='TODO: License declaration',
-    entry_points={'console_scripts': []},
+    entry_points={
+    'console_scripts': [
+        'simple_navigator_demo = rm_navigation.simple_navigator_demo:main',
+    ],
+},
 )

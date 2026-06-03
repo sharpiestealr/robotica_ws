@@ -1,166 +1,155 @@
-from unittest import case
+import os
+import math
+import yaml
+import threading
 
 import rclpy
+from rclpy.action import ActionServer, GoalResponse, CancelResponse
+from rclpy.callback_groups import ReentrantCallbackGroup
+from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
-from std_srvs.srv import SetBool
-from sensor_msgs.msg import LaserScan
-from geometry_msgs.msg import Twist
-from custom_interfaces.action import RotateAngle
+from geometry_msgs.msg import PoseStamped
+from nav2_simple_commander.robot_navigator import BasicNavigator, TaskResult
+from ament_index_python.packages import get_package_share_directory
+
 from custom_interfaces.action import GoToRoom
-import sys
-import time
-from rooms.yaml import rooms
 
-class ActionServer(Node):
-    def __init__(self):
-        super().__init__('projeto_srv_server')
-        self.srv_server = self.create_service(SetBool, 'busy', self.srv_callback)
-        self.subscription = self.create_subscription(LaserScan, 'scan', self.subscription_callback, 10)
-        self.publisher = self.create_publisher(Twist, 'cmd_vel', 10)
-        self.action_server = ActionServer(self, Aula10, 'aula10_action', self.my_action_callback)
 
-    def my_action_callback(self, goal_handle):
-        self.get_logger().info('Executing goal...')
+def _make_pose(nav: BasicNavigator, x: float, y: float, yaw: float = 0.0) -> PoseStamped:
+    pose = PoseStamped()
+    pose.header.frame_id = 'map'
+    pose.header.stamp = nav.get_clock().now().to_msg()
+    pose.pose.position.x = float(x)
+    pose.pose.position.y = float(y)
+    pose.pose.orientation.z = math.sin(yaw / 2.0)
+    pose.pose.orientation.w = math.cos(yaw / 2.0)
+    return pose
 
-        count_up_to = goal_handle.request.count_up_to
-        current_number = 0
 
-        while current_number < count_up_to:
+class ConciergeServer(Node):
+    
+    # Função construtora do servidor de concierge: recebe o BasicNavigator e a lista de cômodos, inicializa o ActionServer e loga os cômodos disponíveis.
+    def __init__(self, nav: BasicNavigator, rooms: dict):
+        super().__init__('concierge_server')
+        self._nav = nav
+        self._rooms = rooms  
+        self._busy = False
+        self._lock = threading.Lock()
 
-            feedback_msg = Aula10.Feedback()
-            feedback_msg.current_number = current_number
-            goal_handle.publish_feedback(feedback_msg)
-            self.get_logger().info(f'Publishing feedback: {current_number}')
+        cb_group = ReentrantCallbackGroup()
+        self._action_server = ActionServer(
+            self,
+            GoToRoom,
+            '/concierge/go_to_room',
+            execute_callback=self._execute_cb,
+            goal_callback=self._goal_cb,
+            cancel_callback=self._cancel_cb,
+            callback_group=cb_group,
+        )
+        self.get_logger().info(
+            f'Concierge pronto. Cômodos disponíveis: {list(self._rooms.keys())}')
 
-            current_number += 1
+    # Função de recebimento de goal: verifica se o cômodo pedido existe e se o servidor não está ocupado, e aceita ou rejeita o goal de acordo.
+    def _goal_cb(self, goal_request):
+        room_name = goal_request.room_name
+        with self._lock:
+            # Se o cômodo pedido não estiver na lista de cômodos conhecidos, rejeita o goal e loga um aviso.
+            if room_name not in self._rooms:
+                self.get_logger().warn(f'Cômodo desconhecido: "{room_name}". Cômodos disponíveis: {list(self._rooms.keys())}')
+                return GoalResponse.REJECT
+            # Se self._busy for True, significa que já tem uma entrega em andamento, então rejeita o goal e loga um aviso. Caso contrário, marca self._busy como True para indicar que o servidor agora está ocupado com uma entrega.
+            if self._busy:
+                self.get_logger().warn('Já existe uma entrega em andamento.')
+                return GoalResponse.REJECT
+            # Caso o cômodo seja conhecido e o servidor não esteja ocupado, aceita o goal e marca self._busy como True.
+            self._busy = True
+        return GoalResponse.ACCEPT
 
-            time.sleep(1)
+    # Função de cancelamento: se o cliente pedir cancelamento, manda o Nav2 cancelar a navegação atual e aceita o cancelamento.
+    def _cancel_cb(self, goal_handle):
+        self.get_logger().info('Cancelamento solicitado pelo cliente.')
+        self._nav.cancelTask()
+        return CancelResponse.ACCEPT
 
-        goal_handle.succeed()
-        result = Aula10.Result()
-        result.final_count = current_number
-        self.get_logger().info('Goal succeeded!')
+    # Função que executa a ação: navega até o cômodo solicitado e preenche o resultado da ação com sucesso ou falha dependendo do resultado da navegação.
+    def _execute_cb(self, goal_handle):
+        room_name = goal_handle.request.room_name
+        room = self._rooms[room_name]
+        self.get_logger().info(f'Navegando para "{room_name}" → {room}')
+
+        # Pega a pose alvo do cômodo e manda o Nav2 ir pra lá.
+        target = _make_pose(
+            self._nav, room['x'], room['y'], room.get('yaw', 0.0))
+        self._nav.goToPose(target)  
+
+
+        feedback_msg = GoToRoom.Feedback()
+        feedback_msg.phase = 'Indo_para_o_cômodo'
+
+        # Loop que fica rodando enquanto o Nav2 não chegar no destino, for cancelado ou falhar. A cada iteração, pega o feedback do Nav2 e publica no feedback da ação.
+        while not self._nav.isTaskComplete():
+            nav_fb = self._nav.getFeedback()
+            if nav_fb is not None:
+                feedback_msg.distance_remaining = float(nav_fb.distance_remaining)
+                goal_handle.publish_feedback(feedback_msg)
+
+        # Verifica se o robô chegou, foi cancelado ou falhou, e preenche o resultado da ação de acordo.
+        result = GoToRoom.Result()
+        nav_result = self._nav.getResult()
+
+        # Se o resultado for SUCCEEDED, preenche o resultado da ação com sucesso=True e uma mensagem de sucesso.
+        if nav_result == TaskResult.SUCCEEDED:
+            self.get_logger().info(f'Chegou em "{room_name}".')
+            result.success = True
+            result.message = f'Chegou em {room_name} com sucesso.'
+            goal_handle.succeed()
+        
+        # Se o resultado for CANCELED, preenche o resultado da ação com sucesso=False e uma mensagem de cancelamento.
+        elif nav_result == TaskResult.CANCELED:
+            self.get_logger().warn('Navegação cancelada.')
+            result.success = False
+            result.message = 'Navegação cancelada.'
+            goal_handle.canceled()
+        
+        # Se não for SUCCEEDED nem CANCELED, considera que falhou, preenche o resultado da ação com sucesso=False e uma mensagem de falha.
+        else:
+            self.get_logger().error('Navegação falhou.')
+            result.success = False
+            result.message = 'Navegação falhou.'
+            goal_handle.abort()
+
+        # Antes de retornar, marca o servidor como não ocupado para aceitar novos goals.
+        with self._lock:
+            self._busy = False
         return result
 
-    def srv_callback(self, request, response):
-        response.success = False
-        if (request.data):
-            response.success = True
-        return response
-    
-    def subscription_callback(self, msg):
-        start_time = time.perf_counter()
-        distancia = msg.range_min        
-        
-        if (distancia >= 0.5): 
-            while (time.perf_counter()-start_time > 2):
-                msg = Twist()
-                msg.angular.z = 0.5
-                self.publisher.publish(msg)
-            self.orientacao = msg.twist.twist.angular.z
-        
-        self.get_logger().info(f'Orientação: {self.orientacao:.3f}')
-        self.get_logger().info(f'Velocidade: {msg.angular.z:.2f}')
 
-        
-    def timer_callback(self):
-        msg = Twist()
-        msg.linear.x = 0
-        if (self.srv_server): msg.linear.x = 0.5
-        self.publisher.publish(msg)
-        self.get_logger().info(f'Velocidade: {msg.linear.x:.2f}')
-        
-    def send_goal(self):
-        self.get_logger().info('Sending goal...')
-        goal_msg = GoToRoom.Goal()
-        goal_msg.room_name = self.room
+def main(args=None):
+    rclpy.init(args=args)
 
-        self.action_client.wait_for_server()
+    nav = BasicNavigator()
 
-        self.send_goal_future = self.action_client.send_goal_async(
-            goal_msg,
-            feedback_callback=self.feedback_callback
-        )
-        self.send_goal_future.add_done_callback(self.goal_response_callback)
+    server = ConciergeServer(nav, rooms)
+    #Espera Nav2 ficar ativo antes de mandar o goal
+    nav.get_logger().info('Aguardando Nav2 ficar ativo...')
+    nav.waitUntilNav2Active()
+    # Agora que Nav2 tá pronto, o servidor de concierge pode aceitar goals.
+    server.get_logger().info(f'Nav2 ativo. Concierge pronto para receber goals. Cômodos disponíveis: {list(server._rooms.keys())}')
 
-    def goal_response_callback(self, future):
-        goal_handle = future.result()
-        if self.room not in rooms:
-            self.get_logger().info('Goal rejected: sala inválida ou não existe')
-            return
-        elif self.busy == True:
-            self.get_logger().info('Goal rejected: já existe uma entrega em andamento')
-            return
+    # O MultiThreadedExecutor permite que o servidor de concierge e o BasicNavigator rodem ao mesmo tempo, sem bloquear um ao outro.
+    executor = MultiThreadedExecutor()
+    executor.add_node(nav) 
+    executor.add_node(server)
 
-        self.get_logger().info('Goal accepted')
-        self.get_result_future = goal_handle.get_result_async()
-        self.get_result_future.add_done_callback(self.get_result_callback)
-
-    def feedback_callback(self, feedback_msg):
-        feedback = feedback_msg.feedback
-        self.get_logger().info(f'Fase: {feedback.phase}\nMetros até {self.room}: {feedback.distance_remaining}')
-        if feedback.distance_remaining > 0: self.busy = True
-
-    def get_result_callback(self, future):
-        result = future.result().result
-        self.get_logger().info(f'Missão: {result.success} - {result.message}')
+    try:
+        executor.spin()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.destroy_node()
+        nav.destroy_node()
         rclpy.shutdown()
 
-def main(args=None):    
-    """ estado = 'idle'
-    
-    match estado:
-        case 'idle':
-            node = ActionClient()
-            node.busy = False
-            estado = 'espera ordem'
-        case 'espera ordem':
-            node.room = rooms[input('Para onde vai o robô?')]
-            estado = 'anda frente'
-        case 'anda frente':
-             node.timer = node.create_timer(0.5, node.timer_callback)
-             node.feedback_callback()
-             if feedback.distance_remaining > 0: estado = 'verifica obstaculo'  
-             else: estado = 'idle'
-        case 'verifica obstaculo':
-            node.subscription = node.create_subscription(LaserScan, 'scan', node.subscription_callback, 10)
-            node.get_logger().info('Verificando obstáculos...')
-            node.feedback_callback()
-            estado = 'gira'
-        case 'gira':
-            node.action_client = ActionClient(node, RotateAngle, 'rotate')
-            node.send_goal()
-            node.feedback_callback()
-            estado = 'anda frente'  """    
-            
-    rclpy.init(args=args)
-    action_server = ActionServerNode()
-    rclpy.spin(action_server)
-    rclpy.shutdown()
-    
-    class ActionServerNode(Node):
-    def __init__(self):
-        super().__init__('aula10_action_server')
 
-    def my_action_callback(self, goal_handle):
-        self.get_logger().info('Executing goal...')
-
-        count_up_to = goal_handle.request.count_up_to
-        current_number = 0
-
-        while current_number < count_up_to:
-
-            feedback_msg = Aula10.Feedback()
-            feedback_msg.current_number = current_number
-            goal_handle.publish_feedback(feedback_msg)
-            self.get_logger().info(f'Publishing feedback: {current_number}')
-
-            current_number += 1
-
-            time.sleep(1)
-
-        goal_handle.succeed()
-        result = Aula10.Result()
-        result.final_count = current_number
-        self.get_logger().info('Goal succeeded!')
-        return result
+if __name__ == '__main__':
+    main()

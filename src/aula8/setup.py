@@ -1,6 +1,6 @@
-from setuptools import find_packages, setup
 import os
 from glob import glob
+from setuptools import find_packages, setup
 
 package_name = 'aula8'
 
@@ -26,9 +26,10 @@ setup(
         ],
     },
     entry_points={
-    'console_scripts': [
-        'publisher = aula8.navigator:main',
-        'subscriber = aula8.navigator:main',
-    ],
-},
+        'console_scripts': [
+            'publisher = aula8.publisher:main',
+            'subscriber = aula8.subscriber:main',
+            'navigator = aula8.navigator:main',
+        ],
+    },
 )

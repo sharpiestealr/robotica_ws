@@ -1,3 +1,4 @@
+charging_pose:    { x: -1.2, y: 0.0, yaw: 0.0 }
 rooms:
   sala:      { x: 1.5, y: 0.0, yaw: 0.0  }
   quarto1:   { x: 6.0, y: 0.0, yaw: 3.14 }

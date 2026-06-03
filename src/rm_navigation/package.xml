@@ -4,12 +4,13 @@
   <name>rm_navigation</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
-  <maintainer email="vicky.garcia.de.souza@gmail.com">root</maintainer>
+  <maintainer email="root@todo.todo">root</maintainer>
   <license>TODO: License declaration</license>
 
   <depend>rclpy</depend>
   <depend>nav2_bringup</depend>
   <depend>nav2_lifecycle_manager</depend>
+  <exec_depend>nav2_simple_commander</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

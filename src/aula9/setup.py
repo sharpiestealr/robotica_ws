@@ -22,7 +22,7 @@ setup(
             'pytest',
         ],
     },
-    entry_points={
+entry_points={
     'console_scripts': [
         'srv_server = aula9.srv_server:main',
         'srv_client = aula9.srv_client:main',

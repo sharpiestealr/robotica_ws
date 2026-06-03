@@ -1,8 +1,8 @@
-# goal
+#goal
 float32 degrees
 ---
-# result
-bool success
+#succes
+bool succes
 ---
-# feedback
+#feedback
 float32 degrees_remaining

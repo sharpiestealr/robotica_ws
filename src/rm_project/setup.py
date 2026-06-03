@@ -10,6 +10,8 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        ('share/' + package_name + '/launch', ['launch/concierge.launch.py']),
+        ('share/' + package_name + '/config', ['config/rooms.yaml']),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -22,9 +24,9 @@ setup(
             'pytest',
         ],
     },
-    entry_points={
+entry_points={
     'console_scripts': [
-        'server = rm_project.concierge_server:main',
+        'concierge_server = rm_project.concierge_server:main',
     ],
-}
+},
 )

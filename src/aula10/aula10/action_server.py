@@ -1,3 +1,11 @@
+
+
+"""
+rclpy: biblioteca principal do ROS2 para Python.
+rclpy.node.Node: classe base para criar nós ROS2.
+rclpy.action.ActionServer: classe que permite criar um Action Server.
+custom_interfaces.action.Aula10: importa a interface de ação customizada criada anteriormente. Note que, para ações, importamos de .action (diferente de .msg para mensagens e .srv para serviços).
+time: usado para criar uma pausa (time.sleep(1)) entre cada iteração da contagem."""
 import rclpy
 from rclpy.node import Node
 from rclpy.action import ActionServer

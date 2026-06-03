@@ -2,9 +2,9 @@
 string room_name
 ---
 # result
-bool success
-string message              # razão do sucesso/falha
+bool   success
+string message
 ---
 # feedback
-float32 distance_remaining  # metros até o waypoint atual
-string phase               # "going_to_room" (Parte 1)
+float32 distance_remaining
+string  phase
