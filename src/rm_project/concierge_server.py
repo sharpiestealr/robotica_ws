@@ -84,7 +84,7 @@ class ConciergeServer(Node):
 
 
         feedback_msg = GoToRoom.Feedback()
-        feedback_msg.phase = 'Indo_para_o_cômodo'
+        feedback_msg.phase = 'going_to_room'
 
         # Loop que fica rodando enquanto o Nav2 não chegar no destino, for cancelado ou falhar. A cada iteração, pega o feedback do Nav2 e publica no feedback da ação.
         while not self._nav.isTaskComplete():

@@ -5,3 +5,4 @@ rooms:
   quarto2:   { x: 6.0, y: 5.0, yaw: 3.14 }
   cozinha:   { x: 1.5, y: 5.0, yaw: 0.0  }
   banheiro:  { x: 5.0, y: 2.5, yaw: 0.0  }
+  charging_pose: { x: -1.2, y: 0.0, yaw: 0.0 }
